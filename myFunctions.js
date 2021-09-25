@@ -1,5 +1,5 @@
 
-//function getResults() {
+function getResults() {
   let assignments = document.getElementsByClassName("assignment-info")
   function checkNum(i) {
     input = Number(i)
@@ -57,4 +57,4 @@
   }
   //console.log(results)
   return results
-//}
+}
