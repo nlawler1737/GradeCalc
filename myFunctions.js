@@ -4,13 +4,33 @@
 	-give each assignment green or red depening on grade change
 		-also on total grades
 	-Grade Marks
-	-Delete added assignments
+	-Delete added assignments??
 */
 
+/*document.querySelector("style").innerHTML += `
+
+#What-If-Button:hover{
+	background-color: #507fbf;
+}
+#addAssignmentButton:hover{
+	background-color: #507fbf;
+}
+#Calculate-Button:hover{
+	background-color: #e2e9f2;
+}
+#Exit-Button:hover{
+	background-color: #507fbf;
+}
+
+`
+*/
 let whatIfEnabled = false
 let currentValue = ""
 let docBody
-
+let values = [[],[],[]]
+let totals = []
+let mainTotal
+let categoryCount
 //document.getElementById("ctl00_MainContent_subPageHead_lblPageTitle").addEventListener("click", exitWhatIfClicked)
 
 //document.querySelector("#ctl00_MainContent_subGBS_DataDetails_ctl01_tdScore").children[0].children[0].children[0].children[0].children[0].value
@@ -73,12 +93,28 @@ function whatIfClicked() {
 	loadCalculateButton()
 	document.getElementById("Exit-Button").style.display = null
 	document.getElementById("What-If-Button").innerHTML = "Calculate"
-	document.getElementById("Calculate-Button").style.display = null
+	//document.getElementById("Calculate-Button").style.display = null
 	
 	document.getElementById("ctl00_MainContent_subGBS_dlGN").onfocus = function(){exitWhatIfClicked()}
 	
-	if (whatIfEnabled == false) {docBody = document.querySelector("div.AllAssignments").innerHTML; console.log("ran")}
-	if (document.getElementById("ctl00_MainContent_subGBS_dlGN").value != currentValue) {currentValue = document.getElementById("ctl00_MainContent_subGBS_dlGN").value; whatIfEnabled = false}
+	if (whatIfEnabled == false) {docBody = document.querySelector("div.AllAssignments").innerHTML; //console.log("ran")
+		
+	}
+	if (document.getElementById("ctl00_MainContent_subGBS_dlGN").value != currentValue) {
+		currentValue = document.getElementById("ctl00_MainContent_subGBS_dlGN").value;
+		whatIfEnabled = false;
+		categoryCount = (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(4) > tbody")) ? (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(4) > tbody").childElementCount)-3 : (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(5) > tbody").childElementCount)-3
+		values = [[],[],[]];
+		mainTotal = Number(document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(categoryCount)}_tdPCT`).innerHTML.replace("%",""))
+		for (i=0;i<categoryCount;i++) {
+			totals[i] = [
+				Number(document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdPTS`).innerHTML),
+				Number(document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdMX`).innerHTML),
+				Number(document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdPCT`).innerHTML.replace("%",""))
+				]
+		}
+		
+	}
 	console.log(getResults())
 	if (!document.getElementById("addAssignmentButton")) {loadAddAssignmentButton()}
 	if (whatIfEnabled == false) {
@@ -90,12 +126,12 @@ function exitWhatIfClicked() {
 	document.getElementById("Exit-Button").style.display = "none"
 	document.getElementById("Calculate-Button").style.display = "none"
 	document.getElementById("What-If-Button").innerHTML = "What-If ✎"
+	document.getElementById("modifiedGradeModal").outerHTML = ""
 	whatIfEnabled = false
 }
 
 function addAssignmentClicked() {
 	
-	let categoryCount = (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(4) > tbody")) ? (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(4) > tbody").childElementCount)-3 : (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(5) > tbody").childElementCount)-3
 	let categoryNames = []
 	let chosenCategoryCount = (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(4) > tbody")) ? "4" : "5"
 	for (i=0;i<categoryCount;i++) {
@@ -104,7 +140,7 @@ function addAssignmentClicked() {
 	let dropDownContent = ""
 	
 	
-	console.log("here")
+	//console.log("here")
 	let table = document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table.GradebookDetailsTable.ResultsTable > tbody")
 	let fillerAssignment = document.createElement("tr")
 	let assignments = document.getElementsByClassName("assignment-info").length
@@ -139,27 +175,27 @@ function addAssignmentClicked() {
 							</div>
 						</div>					
 					</td>
-					<td class="PlainDataClear al vat"><input type="text"></input></td>
-					<td class="PlainDataClear al vat" id="addedAssignment${newNum}" style="white-space: nowrap;"><select id="select${newNum}" class="selectCategory" onchange="document.querySelector('addedAssignment${newNum}').outerHTML = changeLastCharachters(${newNum},document.getElementById("select${newNum}").value);">
+					<td class="PlainDataClear al vat"><input type="text" placeholder="(optional)"></input></td>
+					<td class="PlainDataClear al vat" id="addedAssignment${newNum}" style="white-space: nowrap;"><select id="select${newNum}" class="selectCategory" onchange="changeLastCharachters(this);">
 					<option selected disabled></option>
 					${dropDownContent}
-					</select> Annotations/Classwork</td>
+					</select> <-- Select Category</td>
 
 					
 
 					<td id="ctl00_MainContent_subGBS_DataDetails_ctl${twoDigit(newNum-1)}_tdScore" class="PlainDataClear ar vat score" align="right" style="padding-right:5px; padding-left:5px;">
 						<table border="0" cellpadding="0" cellspacing="0"><tbody><tr>
-							<td width="49%" style="white-space:nowrap;"><input type="text" style="width:50px; heigth:20px" value=""></td>
+							<td width="49%" style="white-space:nowrap;"><input type="text" class="addedInputField" style="width:50px; heigth:20px" value=""></td>
 							<td width="2%" style="">&nbsp;/&nbsp;</td>
-							<td width="49%" align="left" style="">10</td>
+							<td width="49%" align="left" style=""><input type="text" class="addedInputField" style="width:50px; heigth:20px" value=""></td>
 						</tr></tbody></table>
 					</td>
 
 					<td id="ctl00_MainContent_subGBS_DataDetails_ctl${twoDigit(newNum-1)}_tdCorrect" class="PlainDataClear ar vat row-span" style="padding-right:5px;">
 						<table border="0" cellpadding="0" cellspacing="0" style=""><tbody><tr>
-							<td width="49%" style="white-space:nowrap;">&nbsp;&nbsp;&nbsp;</td>
-							<td width="2%" style=";">&nbsp;/&nbsp;</td>
-							<td width="49%" align="left" style=";">10</td>
+							<td width="49%" style="white-space:nowrap;"></td>
+							<td width="2%" style=";"></td>
+							<td width="49%" align="left" style=";"></td>
 						</tr></tbody></table>
 					</td>
 
@@ -171,25 +207,193 @@ function addAssignmentClicked() {
 					<td class="PlainDataClear al vat row-span"></td>
 
 					<td class="PlainDataClear ar vat row-span"></td>
-					<td class="PlainDataClear ar vat row-span">10/01/2021</td>
-					<td class="PlainDataClear ac vat row-span">No</td>
+					<td class="PlainDataClear ar vat row-span"></td>
+					<td class="PlainDataClear ac vat row-span">What-If</td>
 					<td class="PlainDataClear al vat row-span">
 						
 					`
 		table.insertAdjacentElement("beforeend", fillerAssignment)
 		table.insertAdjacentElement("beforeend", newAssignment)
 		
-		
-	console.log("clicked")
+		updateOnBlur()
+	//console.log("clicked")
 	
 }
+
+function setPercentInfo(i, type) {
+	//i += -1
+	selector = "#ctl00_MainContent_subGBS_DataDetails_ctl" + twoDigit(i) + "_tdScore"
+if (type == true) {
+	document.querySelector(`#ctl00_MainContent_subGBS_DataDetails_ctl${twoDigit(i)}_tdPerc`).innerHTML = ((Number(document.querySelector(selector).children[0].children[0].children[0].children[0].children[0].value)/Number(document.querySelector(selector).children[0].children[0].children[0].children[2].children[0].value))*100).toFixed(2) + "%"
+	document.querySelector(`#ctl00_MainContent_subGBS_DataDetails_ctl${twoDigit(i)}_tdPerc`).style.color = "black"
+} else if (type == false) {
+	document.querySelector(`#ctl00_MainContent_subGBS_DataDetails_ctl${twoDigit(i)}_tdPerc`).innerHTML = "Dropped"
+	document.querySelector(`#ctl00_MainContent_subGBS_DataDetails_ctl${twoDigit(i)}_tdPerc`).style.color = "black"
+} else if (type == "extra") {
+	document.querySelector(`#ctl00_MainContent_subGBS_DataDetails_ctl${twoDigit(i)}_tdPerc`).innerHTML = "+" + Number(document.querySelector(selector).children[0].children[0].children[0].children[0].children[0].value) + "pts"
+	document.querySelector(`#ctl00_MainContent_subGBS_DataDetails_ctl${twoDigit(i)}_tdPerc`).style.color = "#009300"
+} else if (type == "down") {
+	document.querySelector(`#ctl00_MainContent_subGBS_DataDetails_ctl${twoDigit(i)}_tdPerc`).style.color = "red"
+} else if (type == "up") {
+	//document.querySelector(`#ctl00_MainContent_subGBS_DataDetails_ctl${twoDigit(i)}_tdPerc`).innerHTML = ((Number(document.querySelector(selector).children[0].children[0].children[0].children[0].children[0].value)/Number(document.querySelector(selector).children[0].children[0].children[0].children[2].children[0].value))*100).toFixed(2) + "%"
+	document.querySelector(`#ctl00_MainContent_subGBS_DataDetails_ctl${twoDigit(i)}_tdPerc`).style.color = "#009300"
+}
+}
+
+function createModal(res, total) {
+	//console.log(res)
+	//console.log(total);
+	let modalHeight = 45
+	let addedCategoryInfo = ''
+	let names = getCategoryNames(categoryCount)
+	for (i=0;i<categoryCount;i++) {
+		if (res[i][2] >= 97) {
+			letterGrade = "A+"
+		} else if (res[i][2] >= 93) {
+			letterGrade = "A"
+		} else if (res[i][2] >= 90) {
+			letterGrade = "A-"
+		} else if (res[i][2] >= 87) {
+			letterGrade = "B+"
+		} else if (res[i][2] >= 83) {
+			letterGrade = "B"
+		} else if (res[i][2] >= 80) {
+			letterGrade = "B-"
+		} else if (res[i][2] >= 77) {
+			letterGrade = "C+"
+		} else if (res[i][2] >= 73) {
+			letterGrade = "C"
+		} else if (res[i][2] >= 70) {
+			letterGrade = "C-"
+		} else if (res[i][2] >= 67) {
+			letterGrade = "D+"
+		} else if (res[i][2] >= 65) {
+			letterGrade = "D"
+		} else if (res[i][2] >= 60) {
+			letterGrade = "D-"
+		} else if (Number(res[i][1]) == 0) {
+			letterGrade = "-"
+		} else {
+			letterGrade = "F"
+		}
+		
+	let color = ["black","black","black","black"]
+		if (res[i][0] > totals[i][0]+0.01) {
+			color[0] = "green"
+		} else if (res[i][0] < totals[i][0]-0.01) {
+			color[0] = "red"
+		}
+		if (res[i][1] > totals[i][1]+0.01) {
+			color[1] = "green"
+		} else if (res[i][1] < totals[i][1]-0.01) {
+			color[1] = "red"
+		}
+		if (res[i][2] > totals[i][2]+0.01) {
+			color[2] = "green"
+		} else if (res[i][2] < totals[i][2]-0.01) {
+			color[2] = "red"
+		}
+		if (res[i][3] > totals[i][3]+0.01) {
+			color[3] = "green"
+		} else if (res[i][3] < totals[i][3]-0.01) {
+			color[3] = "red"
+		}
+		console.log(names[i])
+		console.log(names[i].toString())
+		names[i] = (names[i].length <= 12) ? names[i] : names[i].substring(0,12) + "..."
+		console.log(names[i])
+		
+		addedCategoryInfo += `
+		<tr>
+		<td class="PlainDataClear al vat row-span" row-span="1" style="width:33.33%; padding-right: 10px;">
+		${names[i]}
+		</td>
+		<td class="PlainDataClear ar vat row-span" row-span="1" style="width:33.33%; padding-right: 10px; color: ${color[0]}">
+		${res[i][0]}
+		</td>
+		<td class="PlainDataClear ar vat row-span" row-span="1" style="width:33.33%; padding-right: 10px; color: ${color[1]}">
+		${res[i][1]}
+		</td>
+		<td class="PlainDataClear ar vat row-span" row-span="1" style="width:33.33%; padding-right: 10px; color: ${color[2]}">
+		${res[i][2]}%
+		</td>
+		<td class="PlainDataClear ac vat row-span" row-span="1" style="width:33.33%; padding-right: 10px; color: ${color[3]}">
+		${letterGrade}
+		</td>
+		</tr>
+		`
+		modalHeight += 22
+	}
+	let color = "black"
+	let mainTotal = Number(document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(categoryCount)}_tdPCT`).innerHTML.replace("%",""))
+	if (Number(total) > mainTotal+0.01) {
+		color = "green"
+	} else if (Number(total) < mainTotal-0.01) {
+		color = "red"
+	}
+	
+	let modal = document.createElement("div")
+	modal.id = "modifiedGradeModal"
+	document.body.insertAdjacentElement("beforeend", modal)
+	document.getElementById("modifiedGradeModal").outerHTML = `
+	<div  id="modifiedGradeModal" style="display: block;position: fixed;bottom: 0;right: 0;padding-bottom: 10px;">
+	
+	<div style="padding-left: 96px; padding-bottom: 5px">
+	<span class="modal-button" style="padding-left: 20px; padding-right:20px; background-color: #6C788D; padding-top: 3px; padding-bottom: 3px; border-radius: 10px; color: white;" >Calculate</span>
+	<span class="modal-button" style="padding-left: 20px; padding-right:20px; background-color: #6C788D; padding-top: 3px; padding-bottom: 3px; border-radius: 10px; color: white;" >Exit</span>
+	</div>
+	
+	<table style="background-color: white; width: 360px; height: ${modalHeight}px; border-radius: 10px;box-shadow: 0px 0px 20px 0px #888888; margin-right: 15px;margin-bottom: 25px;">
+    <tbody>
+        <tr>
+            <td class="PlainDataClear al vat row-span" row-span="1" style="width:50%; padding-right: 10px">
+                <strong>Category</strong>
+            </td>
+            <td class="PlainDataClear ac vat row-span" row-span="1" style="width:33.33%; padding-right: 10px">
+                <strong>Points</strong>
+            </td>
+            <td class="PlainDataClear ac vat row-span" row-span="1" style="width:33.33%; padding-right: 10px">
+                <strong>Max</strong>
+            </td>
+            <td class="PlainDataClear ac vat row-span" row-span="1" style="width:33.33%; padding-right: 10px">
+                <strong>Perc</strong>
+            </td>
+            <td class="PlainDataClear ac vat row-span" row-span="1" style="width:33.33%; padding-right: 10px">
+                <strong>Mark</strong>
+            </td>
+        </tr>
+		${addedCategoryInfo}
+		<tr>
+			<td class="PlainDataClear al vat row-span" style="width: 50%">
+			<strong>Total</strong>
+			</td>
+			<td class="PlainDataClear al vat row-span" style="width: 33.33%">
+			&nbsp;
+			</td>
+			<td class="PlainDataClear al vat row-span" style="width: 33.33%">
+			&nbsp;
+			</td>
+			<td class="PlainDataClear ac vat row-span" style="width: 33.33%; color: ${color}">
+			<strong>${total}%</strong>
+			</td>
+			<td class="PlainDataClear ac vat row-span" style="width: 33.33%; color: ${color}">
+			<strong>${getLetterGrade(Number(total))}</strong>
+			</td>
+		</tr>
+    </tbody>
+</table>
+</div>
+	`
+	document.querySelectorAll('.modal-button')[0].addEventListener("click", whatIfClicked)
+	document.querySelectorAll('.modal-button')[1].addEventListener("click", exitWhatIfClicked)
+}
+
 
 function getCategoryNames(categoryCount) {
 	let categoryNames = []
 	let chosenCategoryCount = (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(4) > tbody")) ? "4" : "5"
 	for (i=0;i<categoryCount;i++) {
-categoryNames[categoryNames.length] = document.querySelector(`#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(${chosenCategoryCount}) > tbody`).children[i+2].children[0].innerHTML;
-percentOfGrade[percentOfGrade.length] = (document.querySelector("#ctl00_MainContent_subGBS_DataSummary_ctl"+twoDigit(i)+"_tdPctOfGrade")) ? document.querySelector("#ctl00_MainContent_subGBS_DataSummary_ctl"+twoDigit(i)+"_tdPctOfGrade").innerHTML : "100.00%"
+		categoryNames[categoryNames.length] = document.querySelector(`#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(${chosenCategoryCount}) > tbody`).children[i+2].children[0].innerText;
 }
 	return categoryNames
 }
@@ -207,12 +411,136 @@ function cleanResults(res) {
 	return cleaned
 }
 
-function changeLastCharachters(index, replacement) {
-	console.log(index, replacement)
+function setTotals(results, total) {
+	for (a=0;a<results.length;a++) {
+  	arr = results[a]
+		for (b=0;b<arr.length;b++) {
+			results[a][b] = Number(results[a][b])
+		}
+	}
+	let resultsTotal = Number(total.replace("%",""))
+	let letterGrade = ""
+	document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(categoryCount)}_tdPCT`).innerHTML = total + "%"
+	for (i=0; i<categoryCount; i++) {
+		document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdPTS`).innerHTML = results[i][0].toFixed(2)
+		document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdMX`).innerHTML = results[i][1]
+		document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdPCT`).innerHTML = results[i][2]+"%"
+		
+		if (results[i][0] > totals[i][0]+0.01) {
+			document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdPTS`).style.color = "#009300"
+		} else if (results[i][0] < totals[i][0]) {
+			document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdPTS`).style.color = "red"
+		} else {
+			document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdPTS`).style.color = "black"
+		}
+		
+		if (results[i][1] > totals[i][1]+0.01) {
+			document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdMX`).style.color = "#009300"
+		} else if (results[i][1] < totals[i][1]) {
+			document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdMX`).style.color = "red"
+		} else {
+			document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdMX`).style.color = "black"
+		}
+		
+		if (results[i][2] > totals[i][2]+0.01) {
+			document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdPCT`).style.color = "#009300"
+			document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdMK`).style.color = "#009300"
+		} else if (results[i][2] < totals[i][2]) {
+			document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdPCT`).style.color = "red"
+			document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdMK`).style.color = "red"
+		} else {
+			document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdPCT`).style.color = "black"
+			document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdMK`).style.color = "black"
+		}
+		
+		if (resultsTotal > (mainTotal + 0.01)) {
+			document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(categoryCount)}_tdPCT`).style.color = "#009300"
+		} else if (resultsTotal < mainTotal) {
+			document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(categoryCount)}_tdPCT`).style.color = "red"
+		} else {
+			document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(categoryCount)}_tdPCT`).style.color = "black"
+		}
+
+
+		if (results[i][2] >= 97) {
+			letterGrade = "A+"
+		} else if (results[i][2] >= 93) {
+			letterGrade = "A"
+		} else if (results[i][2] >= 90) {
+			letterGrade = "A-"
+		} else if (results[i][2] >= 87) {
+			letterGrade = "B+"
+		} else if (results[i][2] >= 83) {
+			letterGrade = "B"
+		} else if (results[i][2] >= 80) {
+			letterGrade = "B-"
+		} else if (results[i][2] >= 77) {
+			letterGrade = "C+"
+		} else if (results[i][2] >= 73) {
+			letterGrade = "C"
+		} else if (results[i][2] >= 70) {
+			letterGrade = "C-"
+		} else if (results[i][2] >= 67) {
+			letterGrade = "D+"
+		} else if (results[i][2] >= 65) {
+			letterGrade = "D"
+		} else if (results[i][2] >= 60) {
+			letterGrade = "D-"
+		} else {
+			letterGrade = "F"
+		}
+		
+		document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdMK`).innerHTML = letterGrade
+		
+	}
+}
+
+function getLetterGrade(perc) {
+	if (perc >= 97) {
+			return "A+"
+		} else if (perc >= 93) {
+			return "A"
+		} else if (perc >= 90) {
+			return "A-"
+		} else if (perc >= 87) {
+			return "B+"
+		} else if (perc >= 83) {
+			return "B"
+		} else if (perc >= 80) {
+			return "B-"
+		} else if (perc >= 77) {
+			return "C+"
+		} else if (perc >= 73) {
+			return "C"
+		} else if (perc >= 70) {
+			return "C-"
+		} else if (perc >= 67) {
+			return "D+"
+		} else if (perc >= 65) {
+			return "D"
+		} else if (perc >= 60) {
+			return "D-"
+		} else {
+			return "F"
+		}
+}
+
+function changeLastCharachters(input/*index, replacement*/) {
+	let newValue = input.value
+	let idNum = input.id.replace("select", "")
+	document.getElementById(`addedAssignment${idNum}`).innerHTML = document.getElementById(`addedAssignment${idNum}`).innerHTML.substr(0, ((document.getElementById(`addedAssignment${idNum}`).innerHTML.length)-(document.getElementById(`addedAssignment${idNum}`).innerHTML.replace(/.*(\>)/g,"").trim()).length)) + `${newValue}`
+	/*
+	console.log(input)
 	//return document.querySelector(`#ctl00_MainContent_subGBS_assignmentsView > table.GradebookDetailsTable.ResultsTable > tbody > tr:nth-child(${index*2}) > td:nth-child(3)`).innerHTML.substr(0, ((document.querySelector(`#ctl00_MainContent_subGBS_assignmentsView > table.GradebookDetailsTable.ResultsTable > tbody > tr:nth-child(${index*2}) > td:nth-child(3)`).innerHTML.length)-replacement.length)) + replacement.toString()
 	return `document.querySelector('#ctl00_MainContent_subGBS_assignmentsView > table.GradebookDetailsTable.ResultsTable > tbody > tr:nth-child(2) > td:nth-child(3)').innerHTML.substr(0, ((document.querySelector('#ctl00_MainContent_subGBS_assignmentsView > table.GradebookDetailsTable.ResultsTable > tbody > tr:nth-child(${index*2}) > td:nth-child(3)').innerHTML.length)-(document.querySelector('#ctl00_MainContent_subGBS_assignmentsView > table.GradebookDetailsTable.ResultsTable > tbody > tr:nth-child(${index*2}) > td:nth-child(3)').innerText.length-1))) + '${replacement.toString()}'`
 	console.log("again")
-	
+	*/
+}
+
+function updateOnBlur() {
+	for (i=0;i<document.getElementsByClassName("addedInputField").length;i++) {
+	document.getElementsByClassName("addedInputField")[i].addEventListener("input",getResults)
+	}
 }
 
 function twoDigit(i) {
@@ -223,14 +551,30 @@ return "0"+(i+1).toString()
 return (i+1).toString()
 }
 }
+let timesRan = 0
+// let totals = []
+// let mainTotal = Number(document.getElementById("ctl00_MainContent_subGBS_DataSummary_ctl04_tdPCT").innerHTML.replace("%",""))
+// for (i=0;i<categoryCount;i++) {
+// 	totals[i] = [
+// 		Number(document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdPTS`).innerHTML),
+// 		Number(document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdMX`).innerHTML),
+// 		Number(document.getElementById(`ctl00_MainContent_subGBS_DataSummary_ctl${twoDigit(i)}_tdPCT`).innerHTML.replace("%",""))
+// 		]
+// }
+
+
+
+
 function getResults() {
-	console.log("getResults Running")
+	//console.log("getResults Running")
 let assignments = document.getElementsByClassName("assignment-info")
 function checkNum(i) {
 input = Number(i)
 if (isNaN(i) == false) {return i} else {return "0"}
 }
-
+// if (document.getElementById("ctl00_MainContent_subGBS_dlGN").value) {
+// 	values = [[],[],[]]
+// }
 let amountCorrect = 0
 let amountTotal = 0
 let activePoints = 0
@@ -238,9 +582,7 @@ let totalPercentage = 0
 let totalGrade = 0
 let results = []
 let percentOfGrade = []
-let values = []
-
-let categoryCount = (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(4) > tbody")) ? (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(4) > tbody").childElementCount)-3 : (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(5) > tbody").childElementCount)-3
+//let categoryCount = (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(4) > tbody")) ? (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(4) > tbody").childElementCount)-3 : (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(5) > tbody").childElementCount)-3
 
 //if (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(4) > tbody")) {return (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(4) > tbody").childElementCount)-3 } else { return (document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table:nth-child(5) > tbody").childElementCount)-3}
 let categoryNames = []
@@ -251,14 +593,14 @@ percentOfGrade[percentOfGrade.length] = (document.querySelector("#ctl00_MainCont
 }
 
 
-console.log("CATEGORYNAMES: " + categoryNames)
+//console.log("CATEGORYNAMES: " + categoryNames)
 
 
 for (c=0;c<categoryCount;c++){
 name = categoryNames[c]
 //console.log("NAME: "+ name)
 for (i=0;i<assignments.length;i++) {
-currentName = (document.querySelector('#ctl00_MainContent_subGBS_assignmentsView > table.GradebookDetailsTable.ResultsTable > tbody > tr:nth-child('+((i+1)*2).toString()+') > td:nth-child(3)').textContent).trim()
+currentName = document.querySelector('#ctl00_MainContent_subGBS_assignmentsView > table.GradebookDetailsTable.ResultsTable > tbody > tr:nth-child('+((i+1)*2).toString()+') > td:nth-child(3)').innerHTML.replace(/.*(\>)/g,"").trim()
 //console.log(currentName)
 gradingComplete = document.querySelector("#ctl00_MainContent_subGBS_assignmentsView > table.GradebookDetailsTable.ResultsTable > tbody > tr:nth-child("+((i+1)*2).toString()+") > td.PlainDataClear.ac.vat.row-span").innerHTML
 selector = "#ctl00_MainContent_subGBS_DataDetails_ctl" + twoDigit(i) + "_tdScore"
@@ -268,23 +610,64 @@ if (whatIfEnabled == false) {
 	
 	document.querySelector(selector).children[0].children[0].children[0].children[1].style = ";"
 	document.querySelector(selector).children[0].children[0].children[0].children[2].style = ";"
-	
 	//currentValue = document.getElementById("ctl00_MainContent_subGBS_dlGN").value
-values[values.length] = (document.querySelector(selector).children[0].children[0].children[0].children[0].innerHTML).trim()
+	
+	
+	
+values[0][values[0].length] = (document.querySelector(selector).children[0].children[0].children[0].children[0].innerHTML).trim()
+values[1][values[1].length] = (document.querySelector(selector).children[0].children[0].children[0].children[2].innerHTML).trim()
+
+
 	let isMissing = ""
 	if (document.querySelector(selector).children[0].children[0].children[0].children[0].style.backgroundColor == "rgb(255, 0, 0)") {
 		isMissing = "border-color: rgb(255,0,0);"
 	}
-console.log("InputFeild")
-document.querySelector(selector).children[0].children[0].children[0].children[0].innerHTML = `<input type='text' style='${isMissing}width:50px; heigth:20px' value='${(values[i]).replace(/&nbsp;/gi,'')}'>`
+//console.log("InputFeild")
+document.querySelector(selector).children[0].children[0].children[0].children[0].innerHTML = `<input type='text' class="addedInputField" style='${isMissing}width:50px; heigth:20px' value='${(values[0][i]).replace(/&nbsp;/g,'')}'>`
+document.querySelector(selector).children[0].children[0].children[0].children[2].innerHTML = `<input type='text' class="addedInputField" style='width:50px; heigth:20px' value='${(values[1][i]).replace(/&nbsp;/g,'')}'>`
+
 //console.log("isNaN: "+isNaN(checkNum(document.querySelector("#ctl00_MainContent_subGBS_DataDetails_ctl01_tdScore").children[0].children[0].children[0].children[0].children[0].value)))
 	isMissing = ""
+	
 }
-//--Adding Input Feilds
-console.log("inserted");
-if (currentName == name && ((document.querySelector(selector).children[0].children[0].children[0].children[0].children[0].value).trim() != "" || document.querySelector(selector).children[0].children[0].children[0].children[0].style.backgroundColor == "rgb(255, 0, 0)"/*gradingComplete == "Yes"*/)){
+if (timesRan < assignments.length) {
+values[2][values[2].length] = (document.querySelector(`#ctl00_MainContent_subGBS_DataDetails_ctl${twoDigit(i)}_tdPerc`).innerHTML.replace("%","")).trim()
 
-console.log("name if")
+}
+
+setPercentInfo(i, true)
+//if (timesRan < assignments.length) {
+	
+	let currentNumber = Number(values[2][i])
+	let calculatedPersentage = Number(document.querySelector(`#ctl00_MainContent_subGBS_DataDetails_ctl${twoDigit(i)}_tdPerc`).innerHTML.replace("%",""))
+	//console.log("CALCULATED PERSENTAGE "+calculatedPersentage)
+	//console.log("CURRENT NUMBER "+currentNumber)
+	
+if (document.querySelector(selector).children[0].children[0].children[0].children[0].children[0].value == "") {
+	setPercentInfo(i, false)
+	//console.log("false")
+} else if (document.querySelector(selector).children[0].children[0].children[0].children[2].children[0].value == "0") {
+	setPercentInfo(i, "extra")
+	//console.log("extre")
+} else if ((Number(document.querySelector(`#ctl00_MainContent_subGBS_DataDetails_ctl${twoDigit(i)}_tdPerc`).innerHTML.replace("%",""))) < Number(values[2][i])) {
+	setPercentInfo(i, "down")
+	//console.log("down")
+} else if (calculatedPersentage > currentNumber) {
+	setPercentInfo(i, "up")
+	//console.log("up")
+} else if (values[2][i] == "" && calculatedPersentage == 0) {
+	setPercentInfo(i, "down")
+}
+//}
+
+
+//--Adding Input Feilds
+//console.log("inserted");
+if (currentName == name && ((document.querySelector(selector).children[0].children[0].children[0].children[0].children[0].value).trim() != "" || document.querySelector(selector).children[0].children[0].children[0].children[0].style.backgroundColor == "rgb(255, 0, 0)"/*gradingComplete == "Yes"*/)){
+if (document.querySelector(selector).children[0].children[0].children[0].children[2].children[0].value == "") {
+	document.querySelector(selector).children[0].children[0].children[0].children[2].children[0].value = 0
+}
+//console.log("name if")
 //iString = (i+1).toString()
 //console.log(selector)
 //console.log(checkNum(document.querySelector(selector).children[0].children[0].children[0].children[0].innerHTML))
@@ -292,14 +675,15 @@ console.log("name if")
 
 amountCorrect += Number(checkNum(document.querySelector(selector).children[0].children[0].children[0].children[0].children[0].value))
 //console.log("TEST: "+document.querySelector(selector).children[0].children[0].children[0].children[0].children[0].value)
-console.log(amountTotal, currentName, i+1)
-amountTotal += Number(document.querySelector(selector).children[0].children[0].children[0].children[2].innerHTML)
-
+//console.log(amountTotal, currentName, i+1)
+//amountTotal += Number(document.querySelector(selector).children[0].children[0].children[0].children[2].innerHTML)
+amountTotal += Number(checkNum(document.querySelector(selector).children[0].children[0].children[0].children[2].children[0].value))
 
 }
-console.log("here?")
+//console.log("here?")
+timesRan += 1
 }
-console.log("end of first for");
+//console.log("end of first for");
 
 totalPercentage = checkNum(Number((amountCorrect)/Number(amountTotal))*100)
 results[results.length] = [amountCorrect.toFixed(2), amountTotal, Number(totalPercentage).toFixed(2)]
@@ -307,7 +691,8 @@ results[results.length] = [amountCorrect.toFixed(2), amountTotal, Number(totalPe
 //console.log(amountCorrect,amountTotal, ((amountCorrect/amountTotal)*100).toFixed(2))
 amountCorrect = 0, amountTotal = 0, totalPercentage = 0
 }
-console.log("end of for");
+//console.log("end of for");
+//console.log(values[2])
 	///Get Total Grade Percentage
 for (i=0;i<percentOfGrade.length;i++) {
 	if (Number(results[i][1]) != 0) {
@@ -322,9 +707,11 @@ for (i=0;i<percentOfGrade.length;i++) {
 //console.log("Acticve Points: "+activePoints)
 totalGrade = totalGrade / activePoints
 
-
-console.log(percentOfGrade)
+updateOnBlur()
+//console.log(percentOfGrade)
 //console.log(results)
- alert(cleanResults([categoryNames, results]) + totalGrade.toFixed(2))
+//if (whatIfEnabled == true) {console.log("It did run");alert(cleanResults([categoryNames, results]) + totalGrade.toFixed(2))}
+//setTotals(results, totalGrade.toFixed(2))
+createModal(results, totalGrade.toFixed(2))
 return cleanResults([categoryNames, results]) + totalGrade.toFixed(2)
 }
